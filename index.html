@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>变美女大计划</title>
+<style>
+:root{
+  --bg:#fff9f4; --card:#ffffff; --ink:#3d3126; --muted:#9a8b7d;
+  --primary:#ef8368; --primary-deep:#d9614a; --primary-soft:#fdeae3;
+  --accent:#4f9e7a; --accent-soft:#e8f5ee; --line:#f0e4da;
+  --danger:#d9645f; --danger-soft:#fde9e7;
+  --tabbar-h:62px;
+  --radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 20px)}
+/* 顶部 */
+.appbar{background:linear-gradient(140deg,#f7a188,#ef8368);color:#fff;padding:calc(16px + env(safe-area-inset-top)) 18px 16px}
+.appbar .head{display:flex;align-items:center;gap:10px;max-width:720px;margin:0 auto}
+.appbar .head svg{width:26px;height:26px;flex:none}
+.appbar h1{font-size:18px;font-weight:700;letter-spacing:.5px}
+.appbar .sub{display:block;font-size:11px;font-weight:400;color:#fdeee8;margin-top:1px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:720px;margin:12px auto 0}
+.stat{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:8px 6px;text-align:center}
+.stat b{display:block;font-size:15px;font-weight:650;color:#fff}
+.stat span{font-size:10px;color:#fdeee8}
+/* 主体 */
+.pages{max-width:720px;margin:0 auto;padding:14px 14px 8px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 15px 18px;margin-bottom:13px;box-shadow:0 1px 4px rgba(200,120,90,.06)}
+.h{display:flex;align-items:center;gap:9px;margin-bottom:11px;font-size:15px;font-weight:650;letter-spacing:.3px}
+.h svg{width:18px;height:18px;color:var(--primary);flex:none}
+.h small{font-weight:400;color:var(--muted);font-size:11px;margin-left:2px}
+.sec-note{font-size:12.5px;color:#7c6b5f;background:var(--accent-soft);border-radius:12px;padding:9px 12px;margin:0 0 12px}
+/* 图表 */
+#weightChart{width:100%;height:300px}
+.chart-title{font-size:12.5px;color:var(--muted);margin:0 0 4px}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+.time{border:1px solid var(--line);border-radius:13px;padding:8px 9px;background:#fdfbf9}
+.time b{display:block;font-size:14px;color:var(--primary-deep)}
+.time span{font-size:10.5px;color:var(--muted)}
+/* 进度 */
+.pb{height:14px;border-radius:999px;background:#f2e8e0;overflow:hidden;margin:10px 0 8px}
+.pb-in{height:100%;border-radius:999px;background:linear-gradient(90deg,#ff9d76,#ef8368);transition:width .6s}
+.lost-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.lost-row b{color:var(--primary-deep);font-size:15px}
+.big-num{font-size:30px;font-weight:700;color:var(--primary-deep);line-height:1.2}
+.big-num small{font-size:12px;font-weight:400;color:var(--muted)}
+/* 折叠 */
+details{background:#fdfbf9;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;overflow:hidden}
+summary{cursor:pointer;list-style:none;padding:11px 13px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:var(--primary-deep)}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";margin-left:auto;width:8px;height:8px;border-right:1.6px solid var(--primary);border-bottom:1.6px solid var(--primary);transform:rotate(45deg);transition:.2s;flex:none}
+details[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+.det-inner{padding:2px 13px 13px;font-size:13px;color:#6b5b4f}
+.det-inner ul{padding-left:18px;margin:6px 0}
+.det-inner li{margin:3px 0}
+.det-inner p{margin:5px 0}
+.tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;font-weight:600;vertical-align:1px}
+.tag.ok{background:var(--accent-soft);color:var(--accent)}
+.tag.no{background:var(--danger-soft);color:var(--danger)}
+/* 训练 */
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{flex:1;text-align:center;font-size:12.5px;padding:9px 8px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:.2s;font-weight:500}
+.tab.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.today-badge{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:650;color:var(--primary-deep);background:var(--primary-soft);border-radius:11px;padding:7px 12px;margin-bottom:8px}
+.today-badge svg{width:15px;height:15px;color:var(--primary)}
+.plan-start-set{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:2px 0 10px;flex-wrap:wrap}
+.plan-start-set input{border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;color:var(--ink);background:#fff}
+.date-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:11px;scrollbar-width:none}
+.date-strip::-webkit-scrollbar{display:none}
+.dpill{flex:none;text-align:center;border:1px solid var(--line);border-radius:12px;padding:7px 11px;background:#fdfbf9;cursor:pointer;min-width:64px}
+.dpill .dd{font-size:11.5px;color:var(--muted)}
+.dpill .dn{font-size:13px;font-weight:650;color:var(--ink)}
+.dpill.on{background:var(--primary);border-color:var(--primary)}
+.dpill.on .dd,.dpill.on .dn{color:#fff}
+.dpill.rest .dn{color:var(--accent)}
+.dpill.rest.on{background:var(--accent);border-color:var(--accent);box-shadow:0 2px 8px rgba(79,158,122,.35)}
+.dpill.rest.on .dd,.dpill.rest.on .dn{color:#fff;font-weight:700}
+.day{border:1px solid var(--line);border-radius:15px;padding:12px 13px;background:#fff;margin-bottom:11px}
+.day-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.day-tag{font-size:11px;font-weight:700;background:var(--primary);color:#fff;border-radius:8px;padding:3px 9px;letter-spacing:.4px}
+.day-tag.green{background:var(--accent)}
+.day-tag.rest{background:#c9beb4}
+.day-name{font-size:13.5px;font-weight:650}
+.day-part{font-size:12px;color:var(--muted);margin:0 0 6px}
+.ex{background:#fdfbf9;border:1px solid var(--line);border-radius:11px;padding:7px 10px;margin:6px 0;font-size:12.5px;display:flex;align-items:flex-start;gap:8px}
+.ex-row2{flex:1;min-width:0}
+.ex-row{display:flex;align-items:center;gap:8px}
+.task-check{flex:none;width:18px;height:18px;border:1.5px solid var(--line2,#cfc4bb);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin-top:1px;color:transparent;background:#fff;transition:all .15s}
+.task-check svg{width:11px;height:11px}
+.task-check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.task-check:active{transform:scale(.9)}
+.ex svg{width:15px;height:15px;color:var(--accent);flex:none}
+.ex b{font-weight:600}
+.ex .dur{font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap}
+.vbtn{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--primary-deep);background:var(--primary-soft);border:1px solid var(--line);border-radius:8px;padding:3px 9px;cursor:pointer;text-decoration:none;margin-top:6px;font-weight:500;width:auto}
+.vbtn svg{width:11px;height:11px;flex:none}
+.vbtn:active{transform:scale(.97)}
+.ex-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:2px 8px;margin-left:8px;font-weight:600}
+.swap-btn{width:100%;border:1.5px dashed var(--primary);background:var(--primary-soft);color:var(--primary-deep);font-size:12.5px;font-weight:600;border-radius:11px;padding:9px;margin-top:10px;cursor:pointer}
+.swap-btn:active{transform:scale(.98)}
+.fixed-title{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--accent);margin:2px 0 2px}
+.fixed-title svg{width:14px;height:14px}
+/* 饮食 */
+.need{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:6px 0}
+.need .n{background:var(--accent-soft);border-radius:13px;padding:9px 6px;text-align:center}
+.need .n b{display:block;font-size:14px;color:var(--accent)}
+.need .n span{font-size:10px;color:var(--muted)}
+.meals{display:grid;gap:9px}
+.meal{border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:#fdfbf9}
+.meal-top{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.meal-top b{font-size:13px;color:var(--primary-deep)}
+.meal-top .kcal{font-size:14px;font-weight:700;color:var(--primary);margin-left:auto}
+.nut-line{font-size:11px;color:var(--muted);margin:2px 0 6px}
+.nut-line b{color:var(--accent);font-weight:600}
+.meal ul{list-style:none}
+.meal li{font-size:12px;padding:2.5px 0;display:flex;justify-content:space-between;gap:8px}
+.meal li .kc{color:var(--primary);font-weight:600;white-space:nowrap;font-size:11.5px}
+.mtotal{display:flex;justify-content:space-between;border-top:1px dashed var(--line);margin-top:7px;padding-top:7px;font-size:12.5px;font-weight:600}
+/* 表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.field label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.field input{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px;font-size:15px;background:#fff;color:var(--ink);-webkit-appearance:none}
+.field input:focus{outline:none;border-color:var(--primary)}
+.btn{width:100%;border:none;border-radius:13px;background:var(--primary);color:#fff;font-size:14px;font-weight:600;padding:12px;cursor:pointer;transition:.2s}
+.btn:active{transform:scale(.98)}
+.btn.done{background:var(--accent-soft);color:var(--accent);cursor:default}
+.result{display:none;margin-top:11px;border-radius:13px;padding:11px 13px;font-size:13px}
+.result.show{display:block;animation:fade .2s ease}
+.result.good{background:var(--accent-soft);color:var(--accent)}
+.result.warn{background:var(--primary-soft);color:var(--primary-deep)}
+.result.bad{background:var(--danger-soft);color:var(--danger)}
+.result b{display:block;font-size:14px;margin-bottom:3px}
+.hist{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+.hist th,.hist td{border-bottom:1px solid var(--line);padding:6px;text-align:left}
+.hist th{color:var(--muted);font-weight:500;font-size:11px}
+.empty{font-size:12.5px;color:var(--muted);text-align:center;padding:11px}
+.gd-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.gd-table th,.gd-table td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;white-space:nowrap}
+.gd-table th{font-size:11.5px;color:var(--muted);font-weight:500}
+.gd-table .delta{color:var(--accent);font-weight:600}
+.gd-table .delta.up{color:var(--primary)}
+.table-responsive{overflow-x:auto}
+.measure-desc{font-size:13px;color:#6b5b4f}
+.measure-desc ul{padding-left:18px;margin-top:6px}
+.measure-desc li{margin:3px 0}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.foot{font-size:11px;color:var(--muted);text-align:center;margin:8px 4px 4px;line-height:1.8}
+/* 视频库 */
+.lib{border:1px solid var(--line);border-radius:13px;padding:11px 12px;margin-bottom:8px;background:#fff}
+.lib .lt{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:650;color:var(--primary-deep);margin-bottom:3px}
+.lib .lt svg{width:15px;height:15px;color:var(--primary);flex:none}
+.lib ul{list-style:none}
+.lib li{font-size:12px;padding:4px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.lib li a{color:var(--primary-deep);font-weight:500;text-decoration:none;border-bottom:1px dashed var(--primary)}
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 18px);transform:translateX(-50%) translateY(12px);background:rgba(60,48,44,.92);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:99;white-space:nowrap;max-width:88%;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* 底部 Tab */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:#fffdfc;border-top:1px solid var(--line);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.tbtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 2px 7px;min-height:var(--tabbar-h);background:none;border:none;cursor:pointer;color:var(--muted);font-size:10px;font-weight:500;-webkit-tap-highlight-color:transparent}
+.tbtn svg{width:21px;height:21px}
+.tbtn.on{color:var(--primary-deep)}
+.tbtn.on svg{color:var(--primary)}
+@media(min-width:640px){
+  .need{grid-template-columns:repeat(5,1fr)}
+  .tbtn{font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <div class="head">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6.5 3v5M17.5 3v5M4 8h16M6 8v10a2 2 0 002 2h8a2 2 0 002-2V8M10 13h4" stroke-linecap="round"/></svg>
+    <h1>变美女大计划<span class="sub">69kg→51kg · 164cm · 居家 · 爵士舞×芭杆×饮食</span></h1>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="statCur">69kg</b><span>当前体重</span></div>
+    <div class="stat"><b id="statLost">0kg</b><span>已减</span></div>
+    <div class="stat"><b id="statStreak">0天</b><span>连续打卡</span></div>
+    <div class="stat"><b>51kg</b><span>目标体重</span></div>
+  </div>
+</header>
+
+<main class="pages">
+
+  <!-- PANEL 训练（默认） -->
+  <section class="panel active" id="tab-train">
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        每日训练计划 <small>每天都有瘦小腿+练背 · 可随时换动作</small>
+      </div>
+
+      <div class="tabs" id="phaseTabs">
+        <div class="tab on" data-phase="1">阶段一<br>前4周</div>
+        <div class="tab" data-phase="2">阶段二<br>第5-8周</div>
+        <div class="tab" data-phase="3">阶段三<br>第9周起</div>
+      </div>
+      <div class="sec-note" style="margin:0 0 10px">阶段一练3休1 → 阶段二练4休1 → 阶段三练5休1，体能跟上逐步加码；不想按节奏可随时用卡片下方"换一组动作"。</div>
+
+      <div class="today-badge" id="todayBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3 10h18" stroke-linecap="round"/></svg>
+        <span id="todayBadgeTxt">今天：体能 + 核心</span>
+      </div>
+      <div class="plan-start-set">
+        <span>起始日期：</span>
+        <input type="date" id="planStart" value="">
+        <span id="planStartNote"></span>
+      </div>
+
+      <div class="date-strip" id="dateStrip"></div>
+      <div id="dayPlan"></div>
+
+      <details style="margin-top:11px">
+        <summary>训练怎么安排？可以不按循环练吗？</summary>
+        <div class="det-inner">
+          <ul>
+            <li><b>每天必练</b>：瘦小腿 + 练背（10-15 分钟），这两项每天都安排，视频在当天卡片最上方。</li>
+            <li><b>主干部分</b>按"体能→臀腿→腰腹→休息"轮换给参考建议，但<b>不必死板照做</b>：想练什么就点日期条选任意一天预览，或点卡片下方"换一组动作"直接换当天动作。</li>
+            <li><b>阶段切换</b>：阶段一练满约 4 周、体能跟得上再切阶段二；切不了就留在阶段一继续。</li>
+            <li><b>芭杆已拆解分布</b>：欧阳春晓芭杆按"肩背/腰腹/臀腿"分到不同训练日，不再一次性跟完整合集。</li>
+            <li><b>生理期</b>：经期第 1-3 天以瘦小腿、练背、拉伸为主，暂停腰腹与剧烈蹦跳。</li>
+            <li><b>心率参考</b>：燃脂心率 ≈ (220 − 年龄) × 60-70%，能说话但微喘即可。</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>强度不够？后期可加入的 B 站跟练（按部位选 1-2 个）</summary>
+        <div class="det-inner">
+          <div class="lib">
+            <div class="lt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M13 3L4 14h6l-1 7 9-11h-6l1-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>全身燃脂</div>
+            <ul>
+              <li>韩小四 站立无跑跳全身燃脂（30min 新手友好）<a href="https://www.bilibili.com/video/BV1PU4y1479Z" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>帕梅拉 无跳跃有氧（中强度）<a href="https://www.bilibili.com/video/BV1pu4m1c7ar" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>帕梅拉 10min 燃脂 HIIT<a href="https://www.bilibili.com/video/BV1Np4y1i7rG" target="_blank" rel="noopener">点击跳转</a></li>
+            </ul>
+          </div>
+          <div class="lib">
+            <div class="lt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3s6 5 6 11a6 6 0 01-12 0c0-6 6-11 6-11z" stroke-linecap="round"/></svg>腰腹核心</div>
+            <ul>
+              <li>欧阳春晓 沙漏腰3.0（30min 站立瘦腰核心）<a href="https://www.bilibili.com/video/BV1ofKEzjEUd" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>帕梅拉 10分钟腰腹塑形（带休息·新手友好）<a href="https://www.bilibili.com/video/BV1ZQ1nBTEUS" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>帕梅拉 腹肌训练（进阶·偏虐）<a href="https://www.bilibili.com/video/BV18T41197AZ" target="_blank" rel="noopener">点击跳转</a></li>
+            </ul>
+          </div>
+          <div class="lib">
+            <div class="lt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18s4-9 9-9 7 9 7 9M4 13c2-4 5-6 8-6s6 2 8 6" stroke-linecap="round"/></svg>背部练背</div>
+            <ul>
+              <li>欧阳春晓 少女背直角肩（每天10min，改善圆肩驼背）<a href="https://www.bilibili.com/video/BV1Js8t6RENV" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>周六野 15分钟瘦大腿内外侧（可顺带练臀腿）<a href="https://www.bilibili.com/video/BV12v411g71t" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>欧阳春晓 芭杆体态矫正合集（肩背段落）<a href="https://www.bilibili.com/video/BV1jzPDzYEZW" target="_blank" rel="noopener">点击跳转</a></li>
+            </ul>
+          </div>
+          <div class="lib">
+            <div class="lt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2"/><path d="M12 7v4m0 0l-3 6m3-6l3 6M9 13l-2.5 3M15 13l2.5 3" stroke-linecap="round"/></svg>臀腿塑形</div>
+            <ul>
+              <li>周六野 15分钟瘦大腿内外侧（膝盖友好）<a href="https://www.bilibili.com/video/BV12v411g71t" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>帕梅拉 臀部训练（膝盖友好）<a href="https://www.bilibili.com/video/BV1D5411t7sr" target="_blank" rel="noopener">点击跳转</a></li>
+              <li>韩小四 站立高效瘦腿（无跑跳）<a href="https://www.bilibili.com/video/BV1SK4y1d7is" target="_blank" rel="noopener">点击跳转</a></li>
+            </ul>
+          </div>
+          <p style="margin-top:6px">觉得当天强度不够时，从上面选 1 个 10-15 分钟的视频叠加到当天训练后，或替换同类动作；别贪多，留足恢复时间。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- PANEL 饮食 -->
+  <section class="panel" id="tab-diet">
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="5"/><path d="M11 13v8m-3-4l3-1 3 1M17 4c1.5 2 1.5 4 0 6M19.5 2c2 2.6 2 5.6 0 8" stroke-linecap="round"/></svg>
+        每日饮食计划 <small>全部折叠，点开即看</small>
+      </div>
+      <div class="sec-note" style="margin-top:0">底层逻辑：每日消耗约 1750-1950 kcal（基础代谢约 1430 + 活动），制造 350-500 kcal 温和缺口即稳定掉秤；缺口过大（＜1200）会掉肌肉、掉代谢，反而进入"保护期"不掉秤。</div>
+
+      <details open>
+        <summary>每日推荐食谱（7天轮换，每天不重样）</summary>
+        <div class="det-inner">
+          <div class="tabs" id="recTabs">
+            <div class="tab" data-r="0">周一</div>
+            <div class="tab" data-r="1">周二</div>
+            <div class="tab" data-r="2">周三</div>
+            <div class="tab" data-r="3">周四</div>
+            <div class="tab" data-r="4">周五</div>
+            <div class="tab" data-r="5">周六</div>
+            <div class="tab" data-r="6">周日</div>
+          </div>
+          <div id="recContent"></div>
+          <p class="hint" style="margin-top:7px">食谱以本地食材为主、热量都在 1300-1450 kcal 区间，与"三餐示例"可互换；按"每日营养总目标"组合替换同类食物即可。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>每日营养总目标（热量与五大项）</summary>
+        <div class="det-inner">
+          <div class="need">
+            <div class="n"><b>1300-1450</b><span>总热量 kcal/天</span></div>
+            <div class="n"><b>90-110g</b><span>蛋白质</span></div>
+            <div class="n"><b>130-160g</b><span>碳水</span></div>
+            <div class="n"><b>35-45g</b><span>优质脂肪</span></div>
+            <div class="n"><b>25-30g</b><span>膳食纤维</span></div>
+          </div>
+          <p style="margin-top:8px">快速记住：<b>每餐 1 拳主食 + 1 手掌蛋白 + 半盘蔬菜，全天 1 勺油 + 1 把坚果</b>。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>三餐示例（含完整营养克数与 kcal）</summary>
+        <div class="det-inner">
+          <div class="meals">
+            <div class="meal">
+              <div class="meal-top"><b>早餐</b><span class="kcal">≈280 kcal</span></div>
+              <div class="nut-line">蛋白质 <b>18g</b> · 碳水 <b>22g</b> · 脂肪 <b>10g</b> · 纤维 <b>3g</b></div>
+              <ul>
+                <li><span>水煮蛋 2 颗（约100g，两个掌心）</span><span class="kc">144</span></li>
+                <li><span>无糖豆浆 250ml（约1大杯）</span><span class="kc">65</span></li>
+                <li><span>水煮玉米半根（约80g，比拳略小）</span><span class="kc">70</span></li>
+              </ul>
+            </div>
+            <div class="meal">
+              <div class="meal-top"><b>午餐</b><span class="kcal">≈530 kcal</span></div>
+              <div class="nut-line">蛋白质 <b>48g</b> · 碳水 <b>45g</b> · 脂肪 <b>15g</b> · 纤维 <b>5g</b></div>
+              <ul>
+                <li><span>杂粮饭 150g 熟（约1拳头）</span><span class="kc">175</span></li>
+                <li><span>鸡胸肉 150g（约1.5个手掌去骨）</span><span class="kc">200</span></li>
+                <li><span>西兰花 200g（约2拳头）</span><span class="kc">70</span></li>
+                <li><span>橄榄油 10ml（约1汤匙）</span><span class="kc">90</span></li>
+              </ul>
+            </div>
+            <div class="meal">
+              <div class="meal-top"><b>下午加餐</b><span class="kcal">≈160 kcal</span></div>
+              <div class="nut-line">蛋白质 <b>3g</b> · 碳水 <b>26g</b> · 脂肪 <b>7g</b> · 纤维 <b>3g</b></div>
+              <ul>
+                <li><span>苹果 1 个（约200g，约1拳头）</span><span class="kc">100</span></li>
+                <li><span>巴旦木 10 颗（约12g，1小把）</span><span class="kc">70</span></li>
+              </ul>
+            </div>
+            <div class="meal">
+              <div class="meal-top"><b>晚餐</b><span class="kcal">≈345 kcal</span></div>
+              <div class="nut-line">蛋白质 <b>22g</b> · 碳水 <b>32g</b> · 脂肪 <b>12g</b> · 纤维 <b>6g</b></div>
+              <ul>
+                <li><span>蒸红薯 150g（约1个中等拳）</span><span class="kc">130</span></li>
+                <li><span>虾仁 100g（约12只/1手平铺）</span><span class="kc">70</span></li>
+                <li><span>清炒绿叶菜 300g 熟（约一大盘，3拳头）</span><span class="kc">145</span></li>
+              </ul>
+            </div>
+            <div class="mtotal"><span>全天合计（不含彻爷加餐）</span><b>≈1315 kcal</b></div>
+          </div>
+          <p class="hint" style="margin-top:7px">彻爷法判定需要加餐时，另加 150-250 kcal 的"优质碳水 + 蛋白质"（见"早晚称重"页的加餐公式）。</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>蛋白质吃什么（90-110g/天，约 3-4 个手掌）</summary>
+        <div class="det-inner">
+          <ul>
+            <li>鸡胸肉 100g（约1个去骨手掌）≈ 31g 蛋白</li>
+            <li>水煮蛋 1 颗 ≈ 6g · 虾仁 100g（约1手平铺）≈ 20g</li>
+            <li>豆腐 100g（约半盒/2指厚）≈ 8g · 无糖酸奶 200g（约1小盒）≈ 6g</li>
+            <li>鱼类、瘦牛肉、纯牛奶、无糖希腊酸奶都是好来源</li>
+            <li>吃够方法：午晚餐各 1 手掌肉/蛋/豆 + 早餐 2 颗蛋 + 加餐虾仁或鸡胸</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>碳水吃什么（130-160g/天，每餐 1 拳）</summary>
+        <div class="det-inner">
+          <ul>
+            <li>杂粮饭 150g 熟（约1拳头）≈ 40g · 红薯 150g（约1个中等拳）≈ 30g</li>
+            <li>玉米半根（比拳略小）≈ 20g · 全麦面包 1 片约 15g · 燕麦 40g 干（约4汤匙）≈ 25g</li>
+            <li>粗粮优选：燕麦、糙米、藜麦、玉米、红薯、紫薯、南瓜、山药、荞麦面</li>
+            <li>水果限量：苹果、蓝莓、草莓、猕猴桃，每天 1-2 份（150-200g）</li>
+            <li>碳水不必戒断，把精米白面换成杂粮即可</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>优质脂肪吃什么（35-45g/天，1 勺油 + 1 把坚果）</summary>
+        <div class="det-inner">
+          <ul>
+            <li>橄榄油/山茶油 10-15ml（约1-1.5汤匙）≈ 10-13g</li>
+            <li>坚果 10-15g（约1小把，巴旦木约10颗）≈ 7-9g</li>
+            <li>牛油果半个 ≈ 15g · 三文鱼/秋刀鱼 100g ≈ 13g · 蛋黄、亚麻籽、奇亚籽</li>
+            <li>脂肪不足会掉头发、掉激素，别用"完全不吃油"减肥</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>膳食纤维吃什么（25-30g/天，每餐蔬菜占半盘）</summary>
+        <div class="det-inner">
+          <ul>
+            <li>绿叶菜/西蓝花 200g（约2拳头）≈ 4-6g 纤维</li>
+            <li>木耳/香菇/海带（菌藻类，约1拳头熟）≈ 3-5g</li>
+            <li>燕麦 40g + 毛豆/鹰嘴豆 1小把 ≈ 8g</li>
+            <li>每天 400-500g 蔬菜（熟重），搭配粗粮主食吃；纤维扛饿、助排便，是不饿肚子的关键</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>水（1500-2000ml/天，约 6-8 杯）</summary>
+        <div class="det-inner">
+          <ul>
+            <li>起床 1 杯温水（300ml）唤醒代谢；每餐前 1 杯</li>
+            <li>运动日加 500ml；茶与黑咖可计入，含糖饮料不计入</li>
+            <li>睡前一小时少喝，避免影响晨重与水肿</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary><span class="tag no">避开</span> 减脂期不要碰的食物</summary>
+        <div class="det-inner">
+          <p><b>看配料表定生死：</b></p>
+          <ul>
+            <li><b>配料表前三位出现</b>白砂糖、果葡糖浆、麦芽糖浆、起酥油、植脂末、代可可脂 → 高糖/反式脂肪，放下</li>
+            <li><b>熟食/加工肉类</b>：火腿肠、午餐肉、培根、香肠、卤味鸭脖（高盐高脂高添加剂），偶尔解馋、不作为主菜</li>
+            <li><b>隐藏热量大户</b>：沙拉酱、芝麻酱、花生酱、糖醋/红烧酱汁（一勺酱可能 80-150kcal）</li>
+            <li><b>含糖饮料</b>：奶茶、果汁、可乐、乳酸菌饮料（糖多且不顶饱）</li>
+            <li><b>油炸与糕点</b>：炸鸡、油条、蛋糕、饼干、泡面（热量密度极高）</li>
+          </ul>
+          <p style="margin-top:6px">判断铁律：<b>凡配料表前三位有糖/油/改良剂的，或一份熟食热量超 400kcal 却吃不饱的，都不值得占用你的热量额度。</b></p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- PANEL 早晚称重 -->
+  <section class="panel" id="tab-chest">
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-7 4 14 2-7h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        早晚体重计算法 <small>填两个数，看今晚怎么吃动</small>
+      </div>
+
+      <details>
+        <summary>彻爷法规则（点开查看）</summary>
+        <div class="det-inner">
+          <div style="counter-reset:st;display:grid;gap:8px;margin-bottom:10px">
+            <div style="display:flex;gap:11px;background:#fdfbf9;border:1px solid var(--line);border-radius:13px;padding:10px 12px;font-size:12.5px"><span style="flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px">1</span><div><b>固定时间称重</b><br>早晨：起床、上完厕所、空腹称一次；晚上：9 点前称一次（7 点后不再进食，数值更稳）。</div></div>
+            <div style="display:flex;gap:11px;background:#fdfbf9;border:1px solid var(--line);border-radius:13px;padding:10px 12px;font-size:12.5px"><span style="flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px">2</span><div><b>算出体重差</b><br>当天晚上体重 − 早晨体重，得到差值（按"斤"判断）。</div></div>
+            <div style="display:flex;gap:11px;background:#fdfbf9;border:1px solid var(--line);border-radius:13px;padding:10px 12px;font-size:12.5px"><span style="flex:none;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px">3</span><div><b>按差值行动</b><br>对照下方规则执行"加餐/运动/维稳"。</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:8px">
+            <div style="border-radius:13px;padding:10px 12px;font-size:12.5px;border:1px solid var(--line);background:#fff"><b style="color:var(--primary-deep)">晚上 ≤ 早晨（差≤0）</b>吃太少，代谢可能在下调。必须加餐"优质碳水+蛋白质"（9点前吃完），第二天大概率掉秤。</div>
+            <div style="border-radius:13px;padding:10px 12px;font-size:12.5px;border:1px solid var(--line);background:#fff"><b style="color:var(--primary)">晚上比早晨多 0-1斤</b>理想状态，代谢不错，第二天大概率瘦。有点饿可少量加餐。</div>
+            <div style="border-radius:13px;padding:10px 12px;font-size:12.5px;border:1px solid var(--line);background:#fff"><b style="color:var(--accent)">晚上比早晨多 1-2斤</b>正常代谢区间，不加餐，维持现状。</div>
+            <div style="border-radius:13px;padding:10px 12px;font-size:12.5px;border:1px solid var(--line);background:#fff"><b style="color:var(--danger)">晚上比早晨多 2斤以上</b>今天吃多了。加 1 小时有氧，明天控制饮食。</div>
+          </div>
+        </div>
+      </details>
+
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field"><label>今早体重（kg）</label><input type="number" id="amWeight" step="0.1" placeholder="如 68.6" inputmode="decimal"></div>
+        <div class="field"><label>今晚体重（kg）</label><input type="number" id="pmWeight" step="0.1" placeholder="如 69.2" inputmode="decimal"></div>
+      </div>
+      <button class="btn" type="button" id="chestCalc" data-primary-action="compute">计算体重差 → 今晚该怎么做</button>
+      <div class="result" id="chestResult"></div>
+
+      <details style="margin-top:11px">
+        <summary>加餐公式：吃什么、吃多少</summary>
+        <div class="det-inner">
+          <p><b>公式：优质碳水 + 蛋白质</b>，9 点称完体重后半小时内吃完，最晚不超过 10 点。控制量，让差值回到"0.8 斤内"即可。</p>
+          <ul>
+            <li><b>碳水选一样</b>：半根玉米 / 半个红薯或土豆 / 1 片全麦面包 / 半个贝贝南瓜</li>
+            <li><b>蛋白质选一样</b>：1 个大鸡腿 / 2 个小鸡翅 / 2-3 个水煮蛋 / 50g 虾仁（约半手）/ 1 袋即食鸡胸肉</li>
+          </ul>
+        </div>
+      </details>
+      <details>
+        <summary>注意事项</summary>
+        <div class="det-inner">
+          <ul>
+            <li>加餐在 10 点前完成，尽量半小时内吃完，克制加餐量</li>
+            <li>睡觉尽量不晚于 12 点，熬夜会降低燃脂效率</li>
+            <li>睡前不大量喝水，避免水肿影响次日晨重</li>
+            <li><b>吃太少反而会停掉秤</b>：长期低摄入会使消耗与摄入持平（保护机制），9 点的加餐就是为了打破平衡、维持代谢</li>
+            <li>尽量每天同一时间称重，用同一台秤</li>
+          </ul>
+        </div>
+      </details>
+      <details open>
+        <summary>最近 7 天记录</summary>
+        <div class="det-inner">
+          <div class="table-responsive">
+            <table class="hist" id="chestHist">
+              <thead><tr><th>日期</th><th>晨重kg</th><th>晚重kg</th><th>差值</th><th>建议</th></tr></thead>
+              <tbody id="chestHistBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- PANEL 围度 -->
+  <section class="panel" id="tab-girth">
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18M7 7V5m-2 2v2m6-2V5m10 14v-3m-4 6v-2" stroke-linecap="round"/></svg>
+        身体围度测量 <small>体重会骗人，围度不会</small>
+      </div>
+      <div class="sec-note" style="margin-top:0">掉秤不给力时，围度变小=真的在瘦。建议每 7 天早晨空腹测一次，测完保存会自动对比上次。</div>
+      <details>
+        <summary>测量方法</summary>
+        <div class="det-inner measure-desc">
+          <ul>
+            <li>固定时间：早晨空腹、排便后测量</li>
+            <li>软尺贴皮肤、不勒不松，水平绕一圈</li>
+            <li>每个部位连测 3 次取平均，减少误差</li>
+            <li>部位位置：胸围(过乳头最高点) · 腰围(肚脐上方 2cm 最细处) · 臀围(最宽处) · 大腿围(根部最粗) · 小腿围(最粗处) · 上臂围(手臂伸直最粗)</li>
+          </ul>
+        </div>
+      </details>
+      <form class="form-grid" id="gdForm" style="margin-top:10px">
+        <div class="field"><label>胸围 cm</label><input type="number" id="gdChest" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>腰围 cm</label><input type="number" id="gdWaist" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>臀围 cm</label><input type="number" id="gdHip" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>大腿围 cm</label><input type="number" id="gdThigh" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>小腿围 cm</label><input type="number" id="gdCalf" step="0.1" inputmode="decimal"></div>
+        <div class="field"><label>上臂围 cm</label><input type="number" id="gdArm" step="0.1" inputmode="decimal"></div>
+      </form>
+      <button class="btn" type="button" id="gdSave" data-primary-action="save">保存本次围度</button>
+      <p class="hint" id="gdTip"></p>
+      <div class="table-responsive" style="margin-top:8px">
+        <table class="gd-table">
+          <thead><tr><th>部位</th><th>上次 cm</th><th>本次 cm</th><th>变化</th></tr></thead>
+          <tbody id="gdBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANEL 进度 -->
+  <section class="panel" id="tab-progress">
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke-linecap="round"/></svg>
+        已减进度 <small>数据来自"早晚称重"的最新晨重</small>
+      </div>
+      <div class="lost-row"><b id="lostTxt">已减 0 kg</b><span id="lostRest">距 51kg 还差 18kg</span></div>
+      <div class="pb"><div class="pb-in" id="lostBar"></div></div>
+      <div class="hint" id="lostHint">还没有称重记录，去"早晚称重"记录一次就能看到进度。</div>
+    </div>
+
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3 10h18" stroke-linecap="round"/></svg>
+        每日打卡 <small>完成训练后点一下</small>
+      </div>
+      <div class="big-num" id="streakNum">0<small> 天连续</small></div>
+      <div class="hint" id="streakSub">累计打卡 0 天 · 坚持就是胜利</div>
+      <button class="btn" id="checkinBtn" style="margin-top:10px" data-primary-action="checkin">今天我完成了训练</button>
+    </div>
+
+    <div class="card">
+      <div class="h">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke-linecap="round"/></svg>
+        体重预测曲线 <small>预测 vs 你的真实体重</small>
+      </div>
+      <div class="chart-title">三档预测曲线 + 实际晨重曲线（随称重记录更新）</div>
+      <div id="weightChart" data-chart="true"></div>
+      <div class="times">
+        <div class="time"><b id="t1">积极 10个月</b><span>执行度高+运动加成</span></div>
+        <div class="time"><b id="t2">标准 12个月</b><span>稳定执行饮食</span></div>
+        <div class="time"><b id="t3">保守 15个月</b><span>允许浮动休息</span></div>
+      </div>
+      <details style="margin-top:10px">
+        <summary>这个时间是怎么算出来的？</summary>
+        <div class="det-inner">
+          <p>底层逻辑：1kg 脂肪 ≈ 7700 kcal。你要减 18kg，共需制造约 <b>13.9 万 kcal</b> 的热量缺口（18 × 7700）。</p>
+          <ul>
+            <li>每日饮食缺口 400-500kcal（摄 1300-1450 / 消耗约 1750-1950）→ 每周约减 0.4-0.5kg</li>
+            <li>18kg ÷ 0.4~0.5kg/周 ≈ 36-45 周 ≈ <b>9-11 个月</b>的理论值</li>
+            <li>实际再叠加平台期、生理期水肿回落、执行波动（通常慢 20-40%），综合落在 <b>10-15 个月</b></li>
+          </ul>
+          <p style="margin-top:6px">提醒：前期掉水快、掉秤明显，后期会变慢；平台期是身体在"算账"，用彻爷加餐法或调整运动即可打破，不必焦虑。</p>
+        </div>
+      </details>
+    </div>
+    <div class="sec-note">本计划为个人训练参考：运动与饮食按"温和缺口 + 循序渐进"设计，生理期、不适或平台期请按身体状态灵活调整；BMI 从 25.6 降至 19.0，属健康减脂区间。</div>
+    <div class="foot">本程序基于你提供的数据与领练视频生成，供个人减脂参考<br>热量与时间为估算值，实际效果因人而异；如遇身体不适或久平台期，建议咨询营养科/运动专业人士</div>
+  </section>
+
+</main>
+
+<div id="toast"></div>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tbtn on" data-panel="tab-train" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    训练
+  </button>
+  <button class="tbtn" data-panel="tab-diet" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="8" r="5"/><path d="M11 13v8m-3-4l3-1 3 1M17 4c1.5 2 1.5 4 0 6M19.5 2c2 2.6 2 5.6 0 8" stroke-linecap="round"/></svg>
+    饮食
+  </button>
+  <button class="tbtn" data-panel="tab-chest" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2-7 4 14 2-7h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    早晚称重
+  </button>
+  <button class="tbtn" data-panel="tab-girth" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18M3 12h18M3 17h18M7 7V5m-2 2v2m6-2V5m10 14v-3m-4 6v-2" stroke-linecap="round"/></svg>
+    围度
+  </button>
+  <button class="tbtn" data-panel="tab-progress" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke-linecap="round"/></svg>
+    进度
+  </button>
+</nav>
+
+<script src="https://image.uc.cn/s/uae/g/3n/mos-production/0915/echarts.min.js"></script>
+<script>
+/* SECTION: utils 存储与提示（localStorage 失败自动降级内存） */
+(function(){
+  window.FL = window.FL || {};
+  var mem = {};
+  FL.storageBroken = false;
+  FL.today = function(){
+    var d = new Date();
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+  };
+  FL.load = function(key){
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){
+      return (key in mem) ? mem[key] : null;
+    }
+  };
+  FL.store = function(key, val){
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+      FL.storageBroken = false;
+      return true;
+    } catch(e){
+      mem[key] = val;
+      FL.storageBroken = true;
+      return true;
+    }
+  };
+  FL.toast = function(msg){
+    var el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(FL._t);
+    FL._t = setTimeout(function(){ el.classList.remove('show'); }, 2400);
+  };
+  FL.parseDate = function(s){ var p = s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); };
+  FL.formatDate = function(d){
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (day < 10 ? '0' + day : day);
+  };
+  FL.addDays = function(d, n){ var x = new Date(d); x.setDate(x.getDate() + n); return x; };
+})();
+
+/* SECTION: 训练数据（每日必练 + 主干轮换池） */
+(function(){
+  window.FL = window.FL || {};
+  function it(t, dur, v, vt){ return { t: t, dur: dur, v: v, vt: vt }; }
+  // 每日必练（按阶段变化）：
+  // 阶段一/二：以腿型矫正 + 足弓练习为主（打好基础）
+  // 阶段三起：升级为瘦小腿专项
+  function dailySet(phase){
+    if (phase === '1' || phase === '2') {
+      return [
+        it('腿型矫正：韩小四 10分钟矫正小腿外翻（膝盖内旋→直长腿，官方版）', '约10min', 'https://www.bilibili.com/video/BV1Rp4y187y5', '跟练：韩小四矫正小腿外翻'),
+        it('足弓练习：欧阳春晓 20分钟根本性纠正不良腿型（足弓重建4.0，官方版）', '约15-20min', 'https://www.bilibili.com/video/BV1ofKEzjEUd', '跟练：欧阳春晓足弓重建4.0')
+      ];
+    }
+    return [
+      it('瘦小腿专项：韩小四 12min 站立高效瘦腿（官方版，专攻小腿线条）', '约12min', 'https://www.bilibili.com/video/BV1Vwb5zJEDQ', '跟练：韩小四站立高效瘦腿'),
+      it('练背专项：欧阳春晓体态矫正合集（选"肩背/少女背"段落跟练）', '约10-15min', 'https://www.bilibili.com/video/BV1jzPDzYEZW', '跟练：欧阳春晓芭杆体态合集')
+    ];
+  }
+  FL.dailySet = dailySet;
+  // 主干池（供按日轮换 + "换一组"动态抽取）
+  FL.POOL1 = [
+    { name: '体能 + 核心', part: '全身心肺 + 腹部核心', items: [
+      it('爵士舞体能（跟练前 30 分钟）', '约30min', 'https://www.bilibili.com/video/BV1zwg56eEaf', '跟练：爵士舞体能'),
+      it('腹部核心：卷腹、平板支撑、俄罗斯转体 3 组', '约15min', 'https://www.bilibili.com/video/BV1Wh4y1n7pw', '跟练：帕梅拉·腹肌崛起')
+    ] },
+    { name: '基本功 + 臀腿', part: '下肢臀腿 + 舞蹈基础动作', items: [
+      it('爵士舞基本功（跟练前 35 分钟：律动、isolation、协调）', '约35min', 'https://www.bilibili.com/video/BV1Js8t6RENV', '跟练：爵士舞基本功'),
+      it('下肢臀腿塑形：深蹲、侧抬腿、臀桥 3 组', '约15min', 'https://www.bilibili.com/video/BV12v411g71t', '跟练：周六野15分钟瘦大腿')
+    ] },
+    { name: '体态矫正 + 腰腹', part: '肩背体态 + 腰腹核心', items: [
+      it('芭杆体态矫正合集（选"腰腹/沙漏腰"段落跟练）', '约20-30min', 'https://www.bilibili.com/video/BV1jzPDzYEZW', '跟练：芭杆体态矫正合集'),
+      it('核心收尾：平板支撑 3 组 + 死虫式 3 组', '约10min', 'https://www.bilibili.com/video/BV18T41197AZ', '跟练：帕梅拉·天堂虐腹')
+    ] }
+  ];
+  FL.POOL2 = [
+    { name: '体能 + 核心', part: '全身心肺 + 腹部核心', items: [
+      it('爵士舞体能（跟练前 45 分钟）', '约45min', 'https://www.bilibili.com/video/BV1zwg56eEaf', '跟练：爵士舞体能'),
+      it('腹部核心：卷腹、平板、侧支撑 4 组', '约20min', 'https://www.bilibili.com/video/BV1Wh4y1n7pw', '跟练：帕梅拉·腹肌崛起')
+    ] },
+    { name: '基本功 + 臀腿', part: '下肢臀腿 + 舞蹈基础', items: [
+      it('爵士舞基本功（跟练 45 分钟以上）', '约45min+', 'https://www.bilibili.com/video/BV1Js8t6RENV', '跟练：爵士舞基本功'),
+      it('下肢臀腿塑形：深蹲、臀桥、侧抬腿 4 组', '约20min', 'https://www.bilibili.com/video/BV1D5411t7sr', '跟练：帕梅拉臀部训练')
+    ] },
+    { name: '体态矫正 + 腰腹', part: '肩背体态 + 腰腹核心', items: [
+      it('芭杆体态矫正合集（完整跟练：腰腹+臀腿段落）', '约40-50min', 'https://www.bilibili.com/video/BV1jzPDzYEZW', '跟练：芭杆体态矫正合集'),
+      it('核心收尾：平板支撑 4 组 + 侧平板', '约12min', 'https://www.bilibili.com/video/BV18T41197AZ', '跟练：帕梅拉·天堂虐腹')
+    ] },
+    { name: '全身燃脂日', part: '全身心肺燃脂（完整跟练，二选一）', cal: true, items: [
+      it('爵士舞体能完整版（全力跟完 1 小时）', '约60min', 'https://www.bilibili.com/video/BV1zwg56eEaf', '跟练：爵士舞体能完整版'),
+      it('韩小四站立燃脂（无跑跳，可替换）', '约30min', 'https://www.bilibili.com/video/BV1PU4y1479Z', '跟练：韩小四站立无跑跳燃脂')
+    ] }
+  ];
+  // 阶段三：练5休1，强度再上一档
+  FL.POOL3 = [
+    { name: '体能 + 核心', part: '全身心肺 + 腹部核心（加量）', items: [
+      it('爵士舞体能（完整跟练 50 分钟）', '约50min', 'https://www.bilibili.com/video/BV1zwg56eEaf', '跟练：爵士舞体能'),
+      it('腹部核心：卷腹、平板、侧支撑 5 组', '约20min', 'https://www.bilibili.com/video/BV1Wh4y1n7pw', '跟练：帕梅拉·腹肌崛起')
+    ] },
+    { name: '基本功 + 臀腿', part: '下肢臀腿 + 舞蹈基础（加量）', items: [
+      it('爵士舞基本功（完整跟练 55 分钟）', '约55min', 'https://www.bilibili.com/video/BV1Js8t6RENV', '跟练：爵士舞基本功'),
+      it('下肢臀腿塑形：深蹲、臀桥、侧抬腿 5 组', '约25min', 'https://www.bilibili.com/video/BV1D5411t7sr', '跟练：帕梅拉臀部训练')
+    ] },
+    { name: '体态矫正 + 腰腹', part: '肩背体态 + 腰腹核心（加量）', items: [
+      it('芭杆体态矫正合集（完整跟练：肩背+腰腹+臀腿）', '约50min', 'https://www.bilibili.com/video/BV1jzPDzYEZW', '跟练：芭杆体态矫正合集'),
+      it('核心收尾：平板支撑 5 组 + 腹肌训练', '约15min', 'https://www.bilibili.com/video/BV18T41197AZ', '跟练：帕梅拉·天堂虐腹')
+    ] },
+    { name: '全身燃脂日', part: '全身心肺燃脂（完整跟练，二选一）', cal: true, items: [
+      it('爵士舞体能完整版（全力跟完 1 小时）', '约60min', 'https://www.bilibili.com/video/BV1zwg56eEaf', '跟练：爵士舞体能完整版'),
+      it('韩小四站立燃脂（无跑跳，可替换）', '约30min', 'https://www.bilibili.com/video/BV1PU4y1479Z', '跟练：韩小四站立无跑跳燃脂')
+    ] },
+    { name: '心肺冲刺日', part: '高强度间歇（二选一，量力而行）', cal: true, items: [
+      it('帕梅拉 10min 燃脂 HIIT', '约10min', 'https://www.bilibili.com/video/BV1Np4y1i7rG', '跟练：帕梅拉10min燃脂HIIT'),
+      it('帕梅拉无跳跃有氧（中高强度）', '约15min', 'https://www.bilibili.com/video/BV1pu4m1c7ar', '跟练：帕梅拉无跳跃有氧')
+    ] },
+    { name: '休息 · 放松恢复', part: '只做每日必练（瘦小腿+练背）+ 拉伸即可', rest: true,
+      items: [ it('静态拉伸 + 泡沫轴（全身放松）', '约20min', null, '') ] }
+  ];
+  FL.REST = { name: '休息 · 放松恢复', part: '只做每日必练（瘦小腿+练背）+ 拉伸即可，给身体恢复时间',
+    items: [ it('静态拉伸 + 泡沫轴（大腿、小腿、腰背各 30 秒）', '约15min', null, '') ] };
+  // 阶段 -> 循环长度 & 休息日索引
+  FL.cycleLen = { '1': 4, '2': 5, '3': 6 };
+  FL.restIdx = { '1': 3, '2': 4, '3': 5 };
+})();
+
+/* SECTION: 训练日计划（今日+未来，动态换组） */
+(function(){
+  var planStart = document.getElementById('planStart');
+  var note = document.getElementById('planStartNote');
+  var strip = document.getElementById('dateStrip');
+  var dayPlan = document.getElementById('dayPlan');
+  var badge = document.getElementById('todayBadgeTxt');
+  var KEY = 'planStartDate';
+  var OVKEY = 'planOverride';
+  var DOW = ['周日','周一','周二','周三','周四','周五','周六'];
+  var overrideMap = FL.load(OVKEY) || {};
+
+  function getPhase(){ return document.querySelector('#phaseTabs .tab.on').dataset.phase; }
+  function getPool(){ var ph = getPhase(); return ph === '1' ? FL.POOL1 : ph === '2' ? FL.POOL2 : FL.POOL3; }
+  // 当天是循环中的哪一天（0=第1天）
+  function dayIndex(dateStr){
+    var diff = Math.round((FL.parseDate(dateStr) - FL.parseDate(planStart.value)) / 86400000);
+    if (diff < 0) diff = 0;
+    return diff;
+  }
+  function isRestDay(dateStr){
+    // 手动切换过的日期不再当作休息日
+    if (overrideMap[dateStr] !== undefined) return false;
+    var len = FL.cycleLen[getPhase()], rest = FL.restIdx[getPhase()];
+    return dayIndex(dateStr) % len === rest;
+  }
+  function normPoolIdx(dateStr, poolLen){
+    return dayIndex(dateStr) % poolLen;
+  }
+  function chosenPoolIdx(dateStr, poolLen){
+    if (overrideMap[dateStr] !== undefined && overrideMap[dateStr] >= 0 && overrideMap[dateStr] < poolLen) return overrideMap[dateStr];
+    return normPoolIdx(dateStr, poolLen);
+  }
+
+  function exHtml(it){
+    var key = encodeURIComponent(it.t || it.vt || 'item');
+    var s = '<div class="ex"><span class="task-check" data-key="' + key + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="ex-row2">' +
+      '<div class="ex-row">' +
+      '<svg class="ex-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3s6 5 6 11a6 6 0 01-12 0c0-6 6-11 6-11z" stroke-linecap="round"/></svg>' +
+      '<div><b>' + it.t + '</b></div><span class="dur">' + it.dur + '</span></div>';
+    if (it.v) s += '<a class="vbtn" href="' + it.v + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>' + it.vt + '</a>';
+    s += '</div></div>';
+    return s;
+  }
+
+  function renderOne(dateStr, into){
+    var isToday = dateStr === FL.today();
+    var phase = getPhase();
+    var pool = getPool();
+    var html = '';
+    // 每日必练（按阶段变化）
+    var daily = FL.dailySet(getPhase());
+    html += '<div class="fixed-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12l5 5L20 7" stroke-linecap="round" stroke-linejoin="round"/></svg>每日必练（' + (phase === '3' ? '瘦小腿 + 练背' : '腿型矫正 + 足弓') + '）</div>';
+    var dailyCard = '<div class="day"><div class="day-top"><span class="day-tag green">每日必练</span><span class="day-name">' + (phase === '3' ? '瘦小腿 + 练背' : '腿型矫正 + 足弓') + '</span></div><div class="day-part">' + (phase === '3' ? '每天 25 分钟，后期冲刺小腿线条' : '每天 25-30 分钟，先把腿型与足弓打好底，后期再上瘦小腿') + '</div>';
+    daily.forEach(function(d){ dailyCard += exHtml(d); });
+    dailyCard += '</div>';
+    html += dailyCard;
+
+    // 主干（或休息日）
+    if (isRestDay(dateStr)) {
+      var r = FL.REST;
+      var restName = phase === '3' ? '瘦小腿 + 练背' : '腿型矫正 + 足弓';
+      html += '<div class="day"><div class="day-top"><span class="day-tag rest">休息日</span><span class="day-name">' + r.name + '</span></div><div class="day-part">只做每日必练（' + restName + '）+ 拉伸即可，给身体恢复时间</div>';
+      r.items.forEach(function(d){ html += exHtml(d); });
+      html += '<button class="swap-btn" data-date="' + dateStr + '" data-rest="1" type="button">今天状态好？换一组动作练起来</button>';
+      html += '</div>';
+    } else {
+      var idx = chosenPoolIdx(dateStr, pool.length);
+      var main = pool[idx];
+      html += '<div class="day"><div class="day-top"><span class="day-tag">' + (isToday ? '今日主干' : '预览') + '</span><span class="day-name">' + main.name + '</span></div><div class="day-part">' + main.part + '</div>';
+      main.items.forEach(function(d){ html += exHtml(d); });
+      html += '<button class="swap-btn" data-date="' + dateStr + '" type="button">不按这个练？换一组动作</button>';
+      html += '</div>';
+    }
+    into.innerHTML = html;
+
+    // ---- 每日任务打卡 ----
+    var ckKey = 'taskCheck_' + dateStr;
+    var checked = FL.load(ckKey) || {};
+    into.querySelectorAll('.task-check').forEach(function(cb){
+      var k = cb.dataset.key;
+      if (checked[k]) cb.classList.add('on');
+      cb.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        if (checked[k]) { delete checked[k]; cb.classList.remove('on'); }
+        else { checked[k] = 1; cb.classList.add('on'); }
+        FL.store(ckKey, checked);
+        FL.toast('打卡已记录');
+      });
+    });
+
+    var selDate = strip && strip.querySelector('.dpill.on') ? strip.querySelector('.dpill.on').dataset.date : dateStr;
+    into.querySelectorAll('.swap-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var d = btn.dataset.date;
+        var p = getPool();
+        if (btn.dataset.rest === '1') {
+          // 休息日想练：给一个轮换中的动作
+          var any = normPoolIdx(d, p.length);
+          overrideMap[d] = any;
+          FL.store(OVKEY, overrideMap);
+          FL.toast('已切换：今天练「' + p[any].name + '」');
+        } else {
+          var cur = chosenPoolIdx(d, p.length);
+          var nxt = cur;
+          while (nxt === cur) nxt = Math.floor(Math.random() * p.length); // 随机另一个
+          overrideMap[d] = nxt;
+          FL.store(OVKEY, overrideMap);
+          FL.toast('已换一组：今天练「' + p[nxt].name + '」');
+        }
+        renderOne(d, dayPlan);
+        if (badge) badge.innerHTML = expandBadge(d);
+      });
+    });
+  }
+
+  function expandBadge(dateStr){
+    var phase = getPhase();
+    var len = FL.cycleLen[phase], rest = FL.restIdx[phase];
+    var idx = dayIndex(dateStr) % len;
+    var pool = getPool();
+    var restName = phase === '3' ? '瘦小腿+练背' : '腿型矫正+足弓';
+    if (overrideMap[dateStr] === undefined && idx === rest) return (dateStr === FL.today() ? '今天' : '查看') + '：休息日 · 只练' + restName;
+    return (dateStr === FL.today() ? '今天' : '查看') + '：第' + (idx+1) + '天 · ' + pool[chosenPoolIdx(dateStr, pool.length)].name;
+  }
+
+  function renderStrip(selected){
+    var today = new Date();
+    var html = '';
+    for (var i = 0; i < 7; i++) {          // 今天起，不含昨天
+      var d = FL.addDays(today, i);
+      var ds = FL.formatDate(d);
+      var len = FL.cycleLen[getPhase()], rest = FL.restIdx[getPhase()];
+      var idx = dayIndex(ds) % len;
+      var isRest = idx === rest;
+      var cls = 'dpill' + (isRest ? ' rest' : '') + (ds === selected ? ' on' : '');
+      var dd = i === 0 ? '今天' : i === 1 ? '明天' : DOW[d.getDay()];
+      html += '<div class="' + cls + '" data-date="' + ds + '"><div class="dd">' + dd + '</div><div class="dn">' + (d.getMonth()+1) + '/' + d.getDate() + ' · ' + (isRest ? '休' : '第' + (idx+1) + '天') + '</div></div>';
+    }
+    strip.innerHTML = html;
+    strip.querySelectorAll('.dpill').forEach(function(el){
+      el.addEventListener('click', function(){
+        strip.querySelectorAll('.dpill').forEach(function(x){ x.classList.remove('on'); });
+        el.classList.add('on');
+        renderOne(el.dataset.date, dayPlan);
+        badge.innerHTML = expandBadge(el.dataset.date);
+      });
+    });
+  }
+
+  function reinit(selectedDate){
+    var sel = selectedDate || FL.today();
+    var saved = FL.load(KEY);
+    if (!planStart.value) planStart.value = saved || FL.today();
+    renderStrip(sel);
+    renderOne(sel, dayPlan);
+    badge.innerHTML = expandBadge(sel);
+    note.textContent = planStart.value === FL.today() ? '' : '起始：' + planStart.value;
+  }
+  window.refreshDayPlan = function(){ reinit(); };
+
+  planStart.addEventListener('change', function(){
+    if (!planStart.value) planStart.value = FL.today();
+    FL.store(KEY, planStart.value);
+    reinit(FL.today());
+    FL.toast(FL.storageBroken ? '起始日期已保存（本页会话内有效）' : '起始日期已设置，按新起点推算');
+  });
+  reinit();
+})();
+
+/* SECTION: 每日推荐食谱（7天轮换） */
+(function(){
+  var RECS = [
+    { d: '周一', kcal: '≈1350', meals: [
+      { n: '早餐', kcal: 320, list: [['牛奶燕麦粥（燕麦40g+牛奶250ml）', '320'], ['水煮蛋 1 个', '72'], ['蓝莓 一小把', '40']] },
+      { n: '午餐', kcal: 530, list: [['杂粮饭 150g（约1拳）', '175'], ['鸡胸肉 150g', '200'], ['西兰花 200g', '70'], ['橄榄油 10ml', '90']] },
+      { n: '加餐', kcal: 160, list: [['苹果 1 个', '100'], ['巴旦木 10 颗', '70']] },
+      { n: '晚餐', kcal: 340, list: [['清蒸鲈鱼 150g', '150'], ['蒸红薯 150g', '130'], ['凉拌菠菜 200g', '60']] }
+    ] },
+    { d: '周二', kcal: '≈1310', meals: [
+      { n: '早餐', kcal: 300, list: [['全麦面包 2 片', '190'], ['无糖酸奶 200g', '110']] },
+      { n: '午餐', kcal: 500, list: [['荞麦面 100g（生重）', '180'], ['虾仁 100g', '70'], ['彩椒炒蛋（1蛋+彩椒）', '150'], ['亚麻籽油 8ml', '100']] },
+      { n: '加餐', kcal: 150, list: [['猕猴桃 1 个', '60'], ['腰果 8 颗', '90']] },
+      { n: '晚餐', kcal: 360, list: [['杂粮饭 100g', '117'], ['瘦牛肉片 100g', '125'], ['清炒生菜 250g', '118']] }
+    ] },
+    { d: '周三', kcal: '≈1330', meals: [
+      { n: '早餐', kcal: 300, list: [['水煮玉米 1 根', '130'], ['水煮蛋 2 个', '144'], ['无糖豆浆 250ml', '65']] },
+      { n: '午餐', kcal: 520, list: [['糙米饭 150g', '180'], ['香煎秋刀鱼 1 条约120g', '210'], ['芦笋 150g', '45'], ['橄榄油 8ml', '85']] },
+      { n: '加餐', kcal: 130, list: [['香蕉 半根', '55'], ['核桃 2 个', '75']] },
+      { n: '晚餐', kcal: 380, list: [['紫薯 150g', '130'], ['豆腐虾仁煲（豆腐150g+虾仁80g）', '150'], ['小白菜 200g', '100']] }
+    ] },
+    { d: '周四', kcal: '≈1350', meals: [
+      { n: '早餐', kcal: 320, list: [['燕麦粥 40g', '150'], ['香蕉 大半根', '90'], ['坚果碎 10g', '65']] },
+      { n: '午餐', kcal: 530, list: [['藜麦饭 150g', '190'], ['去皮鸡腿肉 150g', '200'], ['手撕包菜 200g', '70'], ['芝麻油 5ml', '70']] },
+      { n: '加餐', kcal: 150, list: [['草莓 200g', '64'], ['无糖酸奶 150g', '85']] },
+      { n: '晚餐', kcal: 350, list: [['水煮玉米 1 根', '130'], ['清蒸鳕鱼 150g', '130'], ['茼蒿 200g', '90']] }
+    ] },
+    { d: '周五', kcal: '≈1340', meals: [
+      { n: '早餐', kcal: 330, list: [['全麦吐司 2 片', '190'], ['煎蛋 1 个', '90'], ['无糖豆浆 200ml', '52']] },
+      { n: '午餐', kcal: 520, list: [['杂粮饭 150g', '175'], ['瘦牛肉片 120g', '150'], ['清炒西葫芦 250g', '100'], ['橄榄油 8ml', '95']] },
+      { n: '加餐', kcal: 150, list: [['橙子 1 个', '80'], ['杏仁 8 颗', '70']] },
+      { n: '晚餐', kcal: 340, list: [['贝贝南瓜 200g', '150'], ['鸡胸肉丝 100g', '130'], ['油麦菜 200g', '60']] }
+    ] },
+    { d: '周六', kcal: '≈1320', meals: [
+      { n: '早餐', kcal: 300, list: [['蒸山药 150g', '95'], ['卤蛋 1 个', '80'], ['纯牛奶 250ml', '135']] },
+      { n: '午餐', kcal: 510, list: [['糙米饭 150g', '180'], ['白灼虾 120g', '90'], ['荷兰豆 150g', '70'], ['山茶油 8ml', '95'], ['（配老豆腐50g）', '75']] },
+      { n: '加餐', kcal: 150, list: [['苹果 1 个', '100'], ['开心果 10 颗', '50']] },
+      { n: '晚餐', kcal: 360, list: [['蒸土豆 180g', '130'], ['麻婆豆腐（少油，豆腐200g）', '150'], ['空心菜 200g', '80']] }
+    ] },
+    { d: '周日', kcal: '≈1300', meals: [
+      { n: '早餐', kcal: 310, list: [['蒸红薯 150g', '130'], ['水煮蛋 2 个', '144'], ['无糖豆浆 250ml', '65']] },
+      { n: '午餐', kcal: 500, list: [['杂粮饭 150g', '175'], ['鸡胸肉 120g', '160'], ['番茄蛋花汤（1蛋）', '85'], ['凉拌黄瓜 150g', '80']] },
+      { n: '加餐', kcal: 140, list: [['蓝莓 150g', '70'], ['巴旦木 8 颗', '70']] },
+      { n: '晚餐', kcal: 350, list: [['水煮玉米 1 根', '130'], ['虾仁滑蛋（虾100g+蛋1个）', '140'], ['娃娃菜 200g', '80']] }
+    ] }
+  ];
+
+  function renderRec(idx){
+    var box = document.getElementById('recContent');
+    if (!box) return;
+    var r = RECS[idx];
+    var html = '<div class="meals">';
+    r.meals.forEach(function(m){
+      html += '<div class="meal"><div class="meal-top"><b>' + m.n + '</b><span class="kcal">≈' + m.kcal + ' kcal</span></div><ul>';
+      m.list.forEach(function(pair){
+        html += '<li><span>' + pair[0] + '</span><span class="kc">' + pair[1] + ' kcal</span></li>';
+      });
+      html += '</ul></div>';
+    });
+    html += '<div class="mtotal"><span>' + r.d + ' 全天合计</span><b>' + r.kcal + ' kcal</b></div></div>';
+    box.innerHTML = html;
+  }
+
+  var tabs = document.getElementById('recTabs');
+  if (tabs) {
+    tabs.addEventListener('click', function(e){
+      var t = e.target.closest('.tab');
+      if (!t) return;
+      tabs.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      renderRec(parseInt(t.dataset.r, 10));
+    });
+    // 初始选中：跟随真实日期（周一=索引0 ... 周日=索引6，DOW 与 RECS 顺序一致）
+    var dowIndex = { 1:0, 2:1, 3:2, 4:3, 5:4, 6:5, 0:6 }[new Date().getDay()];
+    // 先清掉任何默认高亮，再只点亮当天
+    tabs.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+    var defTab = tabs.querySelector('.tab[data-r="' + dowIndex + '"]');
+    if (defTab) { defTab.classList.add('on'); renderRec(dowIndex); }
+    else renderRec(0);
+  }
+})();
+
+/* SECTION: tabbar 底部导航 + 阶段切换 */
+(function(){
+  var bar = document.getElementById('tabbar');
+  var panels = document.querySelectorAll('.panel');
+  function show(panelId){
+    panels.forEach(function(p){ p.classList.toggle('active', p.id === panelId); });
+    bar.querySelectorAll('.tbtn').forEach(function(b){
+      b.classList.toggle('on', b.dataset.panel === panelId);
+    });
+    var chartEl = document.getElementById('weightChart');
+    if (panelId === 'tab-progress' && chartEl && window.echarts) {
+      setTimeout(function(){
+        var inst = echarts.getInstanceByDom(chartEl);
+        if (inst) { if (window.buildChartOption) inst.setOption(window.buildChartOption(), true); inst.resize(); }
+      }, 60);
+    }
+    window.scrollTo(0, 0);
+  }
+  bar.addEventListener('click', function(e){
+    var btn = e.target.closest('.tbtn');
+    if (!btn) return;
+    show(btn.dataset.panel);
+  });
+  var init = window.location.hash ? window.location.hash.slice(1) : '';
+  if (init) {
+    var p = document.getElementById(init);
+    if (p && p.classList.contains('panel')) show(init);
+  }
+
+  var tabs = document.getElementById('phaseTabs');
+  if (tabs) {
+    tabs.addEventListener('click', function(e){
+      var t = e.target.closest('.tab');
+      if (!t) return;
+      tabs.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      if (typeof window.refreshDayPlan === 'function') window.refreshDayPlan();
+    });
+  }
+})();
+
+/* SECTION: 图表（含真实晨重曲线） */
+window.buildChartOption = function(){
+  var isMobile = window.innerWidth <= 768;
+  function calc(weeklyKg){
+    var w = 69, m = 0;
+    while (w > 51.001 && m < 40) {
+      m += 1;
+      var rate = weeklyKg * (w > 60 ? 1 : (w > 55 ? 0.9 : 0.8));
+      w = Math.max(51, w - rate * 4.33);
+    }
+    return m;
+  }
+  function seriesFor(weeklyKg, color, label){
+    var data = [], w = 69, month = 0;
+    data.push([0, w]);
+    while (w > 51.001 && month < 30) {
+      month += 1;
+      var rate = weeklyKg * (w > 60 ? 1 : (w > 55 ? 0.9 : 0.8));
+      w = Math.max(51, w - rate * 4.33);
+      data.push([month, Number(w.toFixed(1))]);
+    }
+    return { name: label, type: 'line', smooth: true, symbolSize: 5,
+      itemStyle: { color: color }, lineStyle: { width: 2.5, color: color }, data: data };
+  }
+  var ma = calc(0.45), mb = calc(0.38), mc = calc(0.30);
+  var t1 = document.getElementById('t1');
+  var t2 = document.getElementById('t2');
+  var t3 = document.getElementById('t3');
+  if (t1) t1.textContent = '积极 ≈' + ma + '个月';
+  if (t2) t2.textContent = '标准 ≈' + mb + '个月';
+  if (t3) t3.textContent = '保守 ≈' + mc + '个月';
+
+  var recs = FL.load('chestWeightRecords') || [];
+  var byDate = {};
+  recs.forEach(function(r){
+    if (r && r.am !== undefined && r.am !== '-' && !isNaN(parseFloat(r.am)) && !byDate[r.date]) byDate[r.date] = parseFloat(r.am);
+  });
+  var dates = Object.keys(byDate).sort();
+  var real = [];
+  if (dates.length) {
+    var day0 = FL.parseDate(dates[0]);
+    dates.forEach(function(ds){
+      var daysDiff = Math.round((FL.parseDate(ds) - day0) / 86400000);
+      real.push([Number((daysDiff / 30).toFixed(1)), byDate[ds]]);
+    });
+  }
+  var legendData = ['积极（每周0.45kg）', '标准（每周0.38kg）', '保守（每周0.30kg）'];
+  var series = [
+    seriesFor(0.45, '#ef8368', legendData[0]),
+    seriesFor(0.38, '#f7a188', legendData[1]),
+    seriesFor(0.30, '#e8b9a8', legendData[2])
+  ];
+  if (real.length) {
+    series.push({ name: '我的真实体重', type: 'line', smooth: false, symbolSize: 9,
+      itemStyle: { color: '#4f9e7a' }, lineStyle: { width: 2.5, color: '#4f9e7a', type: 'dashed' },
+      data: real });
+    legendData.push('我的真实体重');
+  }
+  return {
+    title: { text: '减脂进度预估（69 → 51kg）', left: 'center', top: isMobile ? 4 : 8,
+      textStyle: { fontSize: 13, color: '#3d3126' } },
+    legend: { bottom: 0, left: 'center', data: legendData },
+    grid: { top: isMobile ? '13%' : '16%', bottom: '24%', left: '8%', right: '6%', containLabel: true },
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        if (!Array.isArray(params)) return '';
+        var s = '第 ' + params[0].value[0] + ' 个月<br/>';
+        for (var i = 0; i < params.length; i++) {
+          if (!Array.isArray(params[i].value)) continue;
+          s += params[i].marker + params[i].seriesName + '：' + Number(params[i].value[1]).toFixed(1) + ' kg<br/>';
+        }
+        return s;
+      }
+    },
+    xAxis: { type: 'value', name: '月', min: 0, max: 16,
+      nameTextStyle: { color: '#9a8b7d' }, axisLabel: { color: '#9a8b7d' },
+      splitLine: { lineStyle: { color: '#f3ebe3' } } },
+    yAxis: { type: 'value', name: '体重(kg)', min: 50, max: 70,
+      nameTextStyle: { color: '#9a8b7d' },
+      axisLabel: { color: '#9a8b7d', formatter: function(v){ return v; } },
+      splitLine: { lineStyle: { color: '#f3ebe3' } } },
+    series: series
+  };
+};
+(function(){
+  var el = document.getElementById('weightChart');
+  if (el && window.echarts) {
+    var chart = echarts.init(el);
+    chart.setOption(window.buildChartOption());
+    window.addEventListener('resize', function(){ chart.resize(); });
+  }
+})();
+
+/* SECTION: 已减进度 + 当前体重 */
+(function(){
+  function refresh(){
+    var list = FL.load('chestWeightRecords') || [];
+    var lostEl = document.getElementById('lostTxt');
+    var restEl = document.getElementById('lostRest');
+    var bar = document.getElementById('lostBar');
+    var hint = document.getElementById('lostHint');
+    var statLost = document.getElementById('statLost');
+    var statCur = document.getElementById('statCur');
+    if (!list.length) {
+      if (lostEl) lostEl.textContent = '已减 0 kg';
+      if (restEl) restEl.textContent = '距 51kg 还差 18kg';
+      if (bar) bar.style.width = '0%';
+      if (hint) hint.style.display = '';
+      if (statLost) statLost.textContent = '0kg';
+      if (statCur) statCur.textContent = '69kg';
+      return;
+    }
+    var rec = list[list.length - 1];
+    if (rec && rec.am) {
+      var lostKg = Math.max(0, 69 - rec.am);
+      var pct = Math.min(100, lostKg / 18 * 100);
+      if (lostEl) lostEl.textContent = '已减 ' + Number(lostKg).toFixed(1) + ' kg';
+      if (restEl) restEl.textContent = '距 51kg 还差 ' + Number(18 - lostKg).toFixed(1) + 'kg';
+      if (bar) bar.style.width = pct.toFixed(1) + '%';
+      if (hint) hint.style.display = 'none';
+      if (statLost) statLost.textContent = Number(lostKg).toFixed(1) + 'kg';
+      if (statCur) statCur.textContent = Number(rec.am).toFixed(1) + 'kg';
+    }
+  }
+  FL.refreshProgress = refresh;
+  refresh();
+})();
+
+/* SECTION: 每日打卡 */
+(function(){
+  var btn = document.getElementById('checkinBtn');
+  if (!btn) return;
+  var KEY = 'checkinDates';
+  function loadDates(){ return FL.load(KEY) || []; }
+  function calcStreak(dates){
+    var set = {};
+    dates.forEach(function(d){ set[d] = 1; });
+    var streak = 0, d = new Date();
+    for (var i = 0; i < 366; i++) {
+      var k = FL.formatDate(d);
+      if (set[k]) { streak++; d = FL.addDays(d, -1); }
+      else break;
+    }
+    return streak;
+  }
+  function render(){
+    var dates = loadDates();
+    var streak = calcStreak(dates);
+    var num = document.getElementById('streakNum');
+    var sub = document.getElementById('streakSub');
+    var stat = document.getElementById('statStreak');
+    if (num) num.innerHTML = streak + '<small> 天连续</small>';
+    if (sub) sub.textContent = '累计打卡 ' + dates.length + ' 天 · 坚持就是胜利';
+    if (stat) stat.textContent = streak + '天';
+    var doneToday = dates.indexOf(FL.today()) !== -1;
+    if (doneToday) {
+      btn.textContent = '今天已打卡';
+      btn.classList.add('done');
+      btn.disabled = true;
+    } else {
+      btn.textContent = '今天我完成了训练';
+      btn.classList.remove('done');
+      btn.disabled = false;
+    }
+  }
+  btn.addEventListener('click', function(){
+    var dates = loadDates();
+    if (dates.indexOf(FL.today()) !== -1) { FL.toast('今天已经打过卡啦'); return; }
+    dates.push(FL.today());
+    FL.store(KEY, dates);
+    render();
+    FL.toast(FL.storageBroken ? '打卡成功（浏览器存储受限，本次会话有效）' : '打卡成功，连续天数 +1');
+  });
+  render();
+})();
+
+/* SECTION: 彻爷早晚体重计算法 */
+(function(){
+  var btn = document.getElementById('chestCalc');
+  var am = document.getElementById('amWeight');
+  var pm = document.getElementById('pmWeight');
+  var res = document.getElementById('chestResult');
+  var KEY = 'chestWeightRecords';
+  function load(){ return FL.load(KEY) || []; }
+  function judge(diffJin){
+    if (diffJin <= 0) return { cls: 'bad', title: '差值 ≤ 0 斤：必须加餐', msg: '今天摄入太少，身体可能在降低代谢。现在加一份"优质碳水 + 蛋白质"（9 点前吃完），第二天大概率掉秤。' };
+    if (diffJin < 1) return { cls: 'good', title: '差值 0-1 斤：理想状态', msg: '代谢不错，不加餐不运动第二天大概率也会瘦。有点饿就少量加餐，不饿就保持。' };
+    if (diffJin < 2) return { cls: 'warn', title: '差值 1-2 斤：正常代谢区间', msg: '饮食量正好，属于维稳阶段。不加餐；想加速可以加 30 分钟有氧。' };
+    return { cls: 'bad', title: '差值超 2 斤：吃多了，需要运动', msg: '控制一下摄入，今天加 1 小时有氧（爵士舞体能完整版走起），明天控制饮食。' };
+  }
+  function renderHist(){
+    var list = load().slice(-7).reverse();
+    var body = document.getElementById('chestHistBody');
+    body.innerHTML = '';
+    if (!list.length) {
+      body.innerHTML = '<tr><td colspan="5"><div class="empty">还没有记录，算完一次会自动保存。</div></td></tr>';
+      return;
+    }
+    list.forEach(function(r){
+      var hasAm = r.am !== '-' && !isNaN(parseFloat(r.am));
+      var hasPm = r.pm !== '-' && !isNaN(parseFloat(r.pm));
+      var diff = hasAm && hasPm ? (parseFloat(r.pm) - parseFloat(r.am)) * 2 : null;
+      var diffTxt = diff === null ? '—' : ((diff > 0 ? '+' : '') + diff.toFixed(1) + '斤');
+      var j = diff === null ? null : judge(diff);
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + r.date + '</td><td>' + (hasAm ? Number(r.am).toFixed(1) : '—') + '</td><td>' + (hasPm ? Number(r.pm).toFixed(1) : '—') + '</td><td>' + diffTxt + '</td><td>' + (j ? j.title.replace('：', ': ') : '记录已保存') + '</td>';
+      body.appendChild(tr);
+    });
+  }
+  btn.addEventListener('click', function(){
+    var av = parseFloat(am.value), pv = parseFloat(pm.value);
+    var hasAm = !isNaN(av), hasPm = !isNaN(pv);
+    if (!hasAm && !hasPm) {
+      res.className = 'result show bad';
+      res.innerHTML = '<b>请至少填写一个体重</b>';
+      return;
+    }
+    var diffKg = hasAm && hasPm ? pv - av : null;
+    var diffJin = diffKg === null ? null : diffKg * 2;
+    var j = diffJin === null ? null : judge(diffJin);
+    if (j) {
+      res.className = 'result show ' + j.cls;
+      var df = (diffJin > 0 ? '+' : '') + diffJin.toFixed(1) + ' 斤（' + (diffKg > 0 ? '+' : '') + diffKg.toFixed(2) + ' kg）';
+      res.innerHTML = '<b>' + j.title + '</b><br>体重差：' + df + '<br>' + j.msg;
+    } else {
+      res.className = 'result show good';
+      res.innerHTML = '<b>记录成功</b><br>填写' + (hasAm ? '今早 ' + av.toFixed(1) + ' kg' : '') + (hasAm && hasPm ? ' 与 ' : '') + (hasPm ? '今晚 ' + pv.toFixed(1) + ' kg' : '') + '，补全另一个早晚值后可计算差值。';
+    }
+    var list = load();
+    list.push({ date: FL.today(), am: hasAm ? av : '-', pm: hasPm ? pv : '-' });
+    FL.store(KEY, list);
+    renderHist();
+    FL.toast(FL.storageBroken ? '记录已保存（浏览器存储受限，本次会话有效）' : '已保存并更新' + FL.today() + '的记录');
+    if (FL.refreshProgress) FL.refreshProgress();
+    var chartEl = document.getElementById('weightChart');
+    if (chartEl && window.echarts) {
+      setTimeout(function(){
+        var inst = echarts.getInstanceByDom(chartEl);
+        if (inst && window.buildChartOption) inst.setOption(window.buildChartOption(), true);
+      }, 50);
+    }
+  });
+  renderHist();
+})();
+
+/* SECTION: 围度记录 */
+(function(){
+  var saveBtn = document.getElementById('gdSave');
+  var tip = document.getElementById('gdTip');
+  var body = document.getElementById('gdBody');
+  var KEY = 'girthRecords';
+  var FIELDS = [
+    ['Chest','胸围'],['Waist','腰围'],['Hip','臀围'],
+    ['Thigh','大腿围'],['Calf','小腿围'],['Arm','上臂围']
+  ];
+  function load(){ return FL.load(KEY) || []; }
+  function render(){
+    var list = load();
+    body.innerHTML = '';
+    if (!list.length) {
+      body.innerHTML = '<tr><td colspan="4"><div class="empty">保存一次围度后，这里会显示与上次的变化。</div></td></tr>';
+      return;
+    }
+    var last = list[list.length - 1];
+    var prev = list.length > 1 ? list[list.length - 2] : null;
+    FIELDS.forEach(function(f){
+      var cur = last[f[0]], old = prev ? prev[f[0]] : null;
+      var tr = document.createElement('tr');
+      var deltaTxt = '—', cls = 'delta';
+      if (old != null && cur != null) {
+        var d = cur - old;
+        deltaTxt = (d > 0 ? '+' : '') + d.toFixed(1) + ' cm';
+        cls = d > 0 ? 'delta up' : 'delta';
+      }
+      tr.innerHTML = '<td>' + f[1] + '</td><td>' + (old != null ? Number(old).toFixed(1) : '—') + '</td><td>' + (cur != null ? Number(cur).toFixed(1) : '—') + '</td><td class="' + cls + '">' + deltaTxt + '</td>';
+      body.appendChild(tr);
+    });
+  }
+  saveBtn.addEventListener('click', function(){
+    var rec = { date: FL.today() };
+    var ok = false;
+    FIELDS.forEach(function(f){
+      var v = parseFloat(document.getElementById('gd' + f[0]).value);
+      if (!isNaN(v) && v > 0) { rec[f[0]] = v; ok = true; }
+      else rec[f[0]] = null;
+    });
+    if (!ok) {
+      tip.textContent = '请至少填写一项围度再保存。';
+      FL.toast('请至少填写一项围度');
+      return;
+    }
+    var list = load();
+    list.push(rec);
+    FL.store(KEY, list);
+    tip.textContent = '已保存 ' + rec.date + ' 的围度记录。';
+    render();
+    FIELDS.forEach(function(f){ document.getElementById('gd' + f[0]).value = ''; });
+    FL.toast(FL.storageBroken ? '围度已保存（浏览器存储受限，本次会话有效）' : '围度已保存，可对比上次变化');
+  });
+  render();
+})();
+</script>
+</body>
+</html>
